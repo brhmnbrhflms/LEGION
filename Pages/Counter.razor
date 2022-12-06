@@ -1,0 +1,87 @@
+﻿@page "/arenda"
+@using LEGION.Models
+@inject NavigationManager Navigation
+
+<PageTitle>Arenda</PageTitle>
+<MudGrid Justify="Justify.Center" Class="mt-4">
+    <MudText Typo="Typo.h3" Class="mt-4">Аренда</MudText>
+</MudGrid>
+
+<MudGrid Class="mt-4" Justify="Justify.Center" Spacing="2">
+    <MudItem>
+        <MudPaper Class="mt-4" Width="300px" Height="150">
+            <MudText><b>АРЕНДА КОМПЬЮТЕРА</b></MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem>
+        <MudPaper Class="mt-4" Width="300px" Height="150">
+            <MudText><b>ВРЕМЯ</b></MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem>
+        <MudPaper Class="mt-4" Width="300px" Height="150">
+            <MudText><b>СТОИМОСТЬ</b></MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+<MudPaper>
+    <MudChip>@state</MudChip>
+
+    @foreach (var arenda in nabors)
+    {
+        <MudGrid Justify="Justify.Center" Spacing="2">
+            <MudItem>
+                <MudPaper Width="300px" Height="150">
+                    <MudText>@arenda.ArendaComputer</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem>
+                <MudPaper Width="300px" Height="150">
+                    <MudText> @($"{DayWeek[arenda.DayBegin.Value - 1]} - {DayWeek[arenda.DayEnd.Value - 1]} {arenda.TimeBegin} - {arenda.TimeOut}")</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem>
+                <MudPaper Width="300px" Height="150">
+                    <MudText>@arenda.Cost</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+        <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="@(() => OnButtonClicked(arenda))">Оформить</MudButton>
+
+
+    }
+</MudPaper>
+
+@code {
+    [Inject] private IDialogService DialogService { get; set; }
+    string state = "Вы еще не оформили аренду";
+    private async Task OnButtonClicked(Nabor nabors)
+    {
+
+        bool? result = await DialogService.ShowMessageBox(
+            "Warning",
+            $"{nabors.ArendaComputer}",
+            yesText: "Оформить", cancelText: "Отмена");
+        state = result == null ? "Отмена" : "Оформить";
+        if (state == "Оформить")
+        {
+            Navigation.NavigateTo("/papage");
+        }
+        StateHasChanged();
+    }
+    class Arenda1
+    {
+        public string Name { get; set; }
+        public string Time { get; set; }
+        public string Cost { get; set; }
+    }
+    Nabor[] nabors = { };
+    string[] DayWeek = { "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
+    protected override Task OnInitializedAsync()
+    {
+        LEGIONContext context = new LEGIONContext();
+        nabors = context.Nabors.ToArray();
+        return base.OnInitializedAsync();
+    }
+
+}
